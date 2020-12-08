@@ -61,6 +61,35 @@ impl Program {
             Some(*ret)
         }
     }
+
+    fn flip(&mut self, ins: usize) {
+        match &self.instructions[ins] {
+            (i, Instruction::Nop(val)) => self.instructions[ins] = (*i, Instruction::Jmp(*val)),
+            (i, Instruction::Jmp(val)) => self.instructions[ins] = (*i, Instruction::Nop(*val)),
+            _ => {}
+        }
+    }
+
+    fn try_flip(&mut self, ins: usize) -> bool {
+        self.flip(ins);
+        self.ip = 0;
+        self.acc = 0;
+        self.acc_before = 0;
+
+        loop {
+            let step = self.step();
+
+            if let Some(2) = step {
+                self.flip(ins);
+                return false;
+            }
+            
+            if step == None {
+                self.flip(ins);
+                return true;
+            }
+        }
+    }
 }
 
 fn parse_num(input: &str) -> IResult<&str, i32> {
@@ -100,6 +129,13 @@ fn main() -> Result<(), io::Error> {
         }
 
         if step == None {
+            break;
+        }
+    }
+
+    for i in 0..program.instructions.len() {
+        if program.try_flip(i) {
+            println!("(2) Found successful flip! Accumulator is {}", program.acc);
             break;
         }
     }
