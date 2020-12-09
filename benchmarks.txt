@@ -1,0 +1,12 @@
+Execution times for my various solutions. Run on an i5-4590 with a moderately
+fast SSD. All benchmarks run with hyperfine.
+
+Day1 - 1.9ms
+Day2 - 0.7ms
+Day3 - 0.7ms
+Day4 - 0.7ms
+Day5 - 0.6ms
+Day6 - 2.0ms
+Day7 - 1.5ms
+Day8 - 0.6ms
+Day9 - 0.9ms

@@ -1,7 +1,0 @@
-Day1 - 2.27ms
-Day2 - 1.19ms
-Day3 - 3.64ms
-Day4 - 1.20ms
-Day5 - 1.05ms
-Day6 - 2.37ms
-Day7 - 1.86ms
