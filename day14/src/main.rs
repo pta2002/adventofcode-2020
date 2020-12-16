@@ -73,9 +73,23 @@ impl BitMask {
 
         ret
     }
+
+    fn applications(&self, num: u64) -> Vec<[OneBit; 36]> {
+        let mut ret = vec![[OneBit::Zero; 36]];
+
+        for (i, b) in self.mask.iter().enumerate().rev() {
+            match b {
+                OneBit::Keep => {
+                    let new_mask_one
+                }
+            }
+        }
+
+        ret
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Instruction {
     Mask(BitMask),
     Set(u64, u64)
@@ -99,6 +113,20 @@ impl Program {
             Instruction::Set(place, number) => {
                 let masked = self.mask.as_ref().unwrap().apply(*number);
                 self.memory.insert(*place, from_bits(&masked));
+            }
+        }
+
+        self.ip += 1;
+
+        self.ip < self.instructions.len()
+    }
+
+    fn step2(&mut self) -> bool {
+        match &self.instructions[self.ip] {
+            Instruction::Mask(mask) => self.mask = Some(mask.clone()),
+            Instruction::Set(place, number) => {
+                let masked = self.mask.as_ref().unwrap().applications(*number);
+                // self.memory.insert(*place, from_bits(&masked));
             }
         }
 
@@ -151,6 +179,8 @@ fn main() -> Result<(), io::Error> {
         instructions.push(ins);
     }
 
+    let instructions2 = instructions.clone();
+
     let mut program = Program::new(instructions);
 
     while program.step() {}
@@ -159,7 +189,15 @@ fn main() -> Result<(), io::Error> {
         .map(|(_,v)| v)
         .fold(0, |acc, val| acc + val);
 
+    let mut program2 = Program::new(instructions2);
+    while program2.step2() {}
+
+    let answer2 = program.memory.iter()
+        .map(|(_,v)| v)
+        .fold(0, |acc, val| acc + val);
+
     println!("(1) Sum of values in memory is {}", answer1);
+    println!("(1) Sum of values in memory is {}", answer2);
 
     Ok(())
 }
