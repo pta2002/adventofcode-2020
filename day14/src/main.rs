@@ -24,7 +24,7 @@ use nom::{
 enum OneBit {
     Keep,
     One,
-    Zero
+    Zero,
 }
 
 impl fmt::Debug for OneBit {
@@ -74,17 +74,39 @@ impl BitMask {
         ret
     }
 
-    fn applications(&self, num: u64) -> Vec<[OneBit; 36]> {
-        let mut ret = vec![[OneBit::Zero; 36]];
-
+    fn masks(&self) -> Vec<BitMask> {
+        let mut thismask = vec![[OneBit::Keep; 36]];
         for (i, b) in self.mask.iter().enumerate().rev() {
             match b {
+                OneBit::One => for mask in &mut thismask {
+                    mask[i] = OneBit::One
+                },
+                OneBit::Zero => for mask in &mut thismask {
+                    mask[i] = OneBit::Keep
+                },
                 OneBit::Keep => {
-                    let new_mask_one
+                    let mut newmasks = thismask.clone();
+                    for mask in &mut thismask {
+                        mask[i] = OneBit::One
+                    }
+
+                    for mask in &mut newmasks {
+                        mask[i] = OneBit::Zero
+                    }
+
+                    thismask.append(&mut newmasks);
                 }
             }
         }
 
+        thismask.iter().map(|m| Self { mask: *m }).collect()
+    }
+
+    fn applications(&self, num: u64) -> Vec<u64> {
+        let mut ret = vec![];
+        for mask in self.masks() {
+            ret.push(from_bits(&mask.apply(num)));
+        }
         ret
     }
 }
@@ -125,8 +147,11 @@ impl Program {
         match &self.instructions[self.ip] {
             Instruction::Mask(mask) => self.mask = Some(mask.clone()),
             Instruction::Set(place, number) => {
-                let masked = self.mask.as_ref().unwrap().applications(*number);
-                // self.memory.insert(*place, from_bits(&masked));
+                let masked = self.mask.as_ref().unwrap().applications(*place);
+
+                for i in masked {
+                    self.memory.insert(i, *number);
+                }
             }
         }
 
@@ -190,9 +215,10 @@ fn main() -> Result<(), io::Error> {
         .fold(0, |acc, val| acc + val);
 
     let mut program2 = Program::new(instructions2);
+
     while program2.step2() {}
 
-    let answer2 = program.memory.iter()
+    let answer2 = program2.memory.iter()
         .map(|(_,v)| v)
         .fold(0, |acc, val| acc + val);
 
